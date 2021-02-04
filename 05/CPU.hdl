@@ -40,4 +40,20 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+    Mux16 (a=instruction, b=ALUoutput, sel=instruction[15], out=ArIn);
+    Mux (a=true, b=instruction[5], sel=instruction[15], out=ArControl);
+    ARegister (in=ArIn, load=ArControl, out=ArOut, out[0..14]=addressM); // A register
+    Mux16 (a=ArOut, b=inM, sel=instruction[12], out=ALUIn2);
+    Mux (a=false, b=instruction[4], sel=instruction[15], out=DrControl);
+    DRegister (in=ALUoutput, load=DrControl, out=ALUIn1); // D register
+    ALU (x=ALUIn1, y=ALUIn2, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=ALUoutput, out=outM, zr=zr, ng=ng);
+    Mux8Way (a=false, b=true, c=false, d=true, e=false, f=true, g=false, h=true, sel[0]=instruction[0], sel[1]=instruction[1], sel[2]=instruction[2], out=load1);
+    Mux8Way (a=false, b=false, c=false, d=false, e=true, f=true, g=true, h=true, sel[0]=instruction[0], sel[1]=instruction[1], sel[2]=instruction[2], out=load2);
+    Mux8Way (a=false, b=false, c=true, d=true, e=false, f=false, g=true, h=true, sel[0]=instruction[0], sel[1]=instruction[1], sel[2]=instruction[2], out=load3);
+    Mux8Way (a=false, b=false, c=false, d=false, e=false, f=false, g=false, h=false, sel[0]=instruction[0], sel[1]=instruction[1], sel[2]=instruction[2], out=load4);
+    Mux4Way (a=load1, b=load2, c=load3, d=load4, sel[0]=ng, sel[1]=zr, out=loadtmp);
+    Mux (a=false, b=loadtmp, sel=instruction[15], out=load);
+    PC (in=ArOut, load=load, inc=true, reset=reset, out[0..14]=pc);
+    Mux4Way (a=false, b=false, c=false, d=true, sel[0]=instruction[3], sel[1]=instruction[15], out=writeM);
+
 }
